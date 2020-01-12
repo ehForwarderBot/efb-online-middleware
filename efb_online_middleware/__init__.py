@@ -11,7 +11,7 @@ import threading
 from typing import Optional
 from ruamel.yaml import YAML
 
-from ehforwarderbot import EFBMiddleware, Message, \
+from ehforwarderbot import Middleware, Message, \
     coordinator, Channel, utils
 
 from efb_wechat_slave.vendor import wxpy
@@ -34,7 +34,7 @@ ping_text = 'PING'
 pong_text = 'PONG'
 
 
-class OnlineMiddleware(EFBMiddleware):
+class OnlineMiddleware(Middleware):
     """
     EFB Middleware - OnlineMiddleware
     """
