@@ -11,8 +11,8 @@ import threading
 from typing import Optional
 from ruamel.yaml import YAML
 
-from ehforwarderbot import EFBMiddleware, EFBMsg, EFBStatus, \
-    EFBChat, coordinator, EFBChannel, utils
+from ehforwarderbot import EFBMiddleware, Message, \
+    coordinator, Channel, utils
 
 from efb_wechat_slave.vendor import wxpy
 
@@ -50,7 +50,7 @@ class OnlineMiddleware(EFBMiddleware):
         super().__init__()
         self.load_config()
 
-        if hasattr(coordinator, "master") and isinstance(coordinator.master, EFBChannel):
+        if hasattr(coordinator, "master") and isinstance(coordinator.master, Channel):
             self.channel = coordinator.master
             CHANNEL_ETM_BOT = self.channel.bot_manager
             ADMIN_ID = self.channel.config['admins'][0]
@@ -91,17 +91,17 @@ class OnlineMiddleware(EFBMiddleware):
 
             dalay_heart_beat = DALAY_HEART_BEAT
 
-    def sent_by_master(self, message: EFBMsg) -> bool:
+    def sent_by_master(self, message: Message) -> bool:
         author = message.author
         return author and author.module_id and author.module_id == 'blueset.telegram'
 
-    def process_message(self, message: EFBMsg) -> Optional[EFBMsg]:
+    def process_message(self, message: Message) -> Optional[Message]:
         """
         Process a message with middleware
         Args:
-            message (:obj:`.EFBMsg`): Message object to process
+            message (:obj:`.Message`): Message object to process
         Returns:
-            Optional[:obj:`.EFBMsg`]: Processed message or None if discarded.
+            Optional[:obj:`.Message`]: Processed message or None if discarded.
         """
         global ping_status, failure_time, dalay_heart_beat, warn_status
 
@@ -111,7 +111,7 @@ class OnlineMiddleware(EFBMiddleware):
         author = message.author
         if author:
             # self.logger.log( 99, "message.author: %s", message.author.__dict__)
-            if author.chat_name == echo_mp and message.text == pong_text and ping_status == PING_STATUS:
+            if author.name == echo_mp and message.text == pong_text and ping_status == PING_STATUS:
                 ping_status = PONG_STATUS
                 failure_time = 0
                 dalay_heart_beat = DALAY_HEART_BEAT
