@@ -1,5 +1,5 @@
-
 [![PyPI release](https://img.shields.io/pypi/v/efb-online-middleware.svg)](https://pypi.org/project/efb-online-middleware/)
+[![Downloads](https://pepy.tech/badge/efb-online-middleware/month)](https://pypi.org/project/efb-online-middleware/)
 
 ### Main Function
 
