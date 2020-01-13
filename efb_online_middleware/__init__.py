@@ -78,7 +78,7 @@ class OnlineMiddleware(Middleware):
             return
 
         with config_path.open() as f:
-            data = YAML().load(f)
+            data = YAML().safe_load(f)
 
             # Verify configuration
             echo_mp = data.get("echo_mp")
