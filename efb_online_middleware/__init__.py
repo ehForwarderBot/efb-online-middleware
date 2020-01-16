@@ -78,7 +78,7 @@ class OnlineMiddleware(Middleware):
             return
 
         with config_path.open() as f:
-            data = YAML().safe_load(f)
+            data = YAML().full_load(f)
 
             # Verify configuration
             echo_mp = data.get("echo_mp")
@@ -152,8 +152,11 @@ def heart_beat():
         ping_status = PING_STATUS
         echo_chat.send(ping_text)
 
+    # except ValueError:
+    #     CHANNEL_ETM_BOT.send_message(ADMIN_ID, '微信可能已掉线，请检查')
+
     except Exception:
-        pass
+        logger.exception('echo failed.')
 
 
 def get_echo_chat():
