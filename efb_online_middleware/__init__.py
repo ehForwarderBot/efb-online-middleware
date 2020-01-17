@@ -33,6 +33,7 @@ echo_mp = ''
 ping_text = 'PING'
 pong_text = 'PONG'
 
+find_mp_fail_tip = False
 
 class OnlineMiddleware(Middleware):
     """
@@ -78,7 +79,7 @@ class OnlineMiddleware(Middleware):
             return
 
         with config_path.open() as f:
-            data = YAML().full_load(f)
+            data = YAML().load(f)
 
             # Verify configuration
             echo_mp = data.get("echo_mp")
@@ -103,7 +104,7 @@ class OnlineMiddleware(Middleware):
         Returns:
             Optional[:obj:`.Message`]: Processed message or None if discarded.
         """
-        global ping_status, failure_time, dalay_heart_beat, warn_status
+        global ping_status, failure_time, dalay_heart_beat, warn_status, find_mp_fail_tip
 
         if self.sent_by_master(message):
             return message
@@ -116,6 +117,7 @@ class OnlineMiddleware(Middleware):
                 failure_time = 0
                 dalay_heart_beat = DALAY_HEART_BEAT
                 warn_status = False
+                find_mp_fail_tip = False
                 return None
             if message.text == pong_text:
                 self.logger.log( 99, "Echo msg: %s, ping_status: %s", message.__dict__, ping_status)
@@ -152,8 +154,9 @@ def heart_beat():
         ping_status = PING_STATUS
         echo_chat.send(ping_text)
 
-    # except ValueError:
-    #     CHANNEL_ETM_BOT.send_message(ADMIN_ID, '微信可能已掉线，请检查')
+    except ValueError:
+        if not find_mp_fail_tip:
+            CHANNEL_ETM_BOT.send_message(ADMIN_ID, '微信可能已掉线，请检查')
 
     except Exception:
         logger.exception('echo failed.')
