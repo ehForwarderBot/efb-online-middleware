@@ -18,9 +18,12 @@ from efb_wechat_slave.vendor import wxpy
 
 from .__version__ import __version__ as version
 
+schedule = sched.scheduler(time.time, time.sleep)
+
 DALAY_HEART_BEAT = 1800     # half an hour
-PING_STATUS = 'PING'
-PONG_STATUS = 'PONG'
+STATUS_PING = 'PING'
+STATUS_PONG = 'PONG'
+EAT_ECHO_MSG = True
 
 global CHANNEL_ETM_BOT, CHANNEL_EWS, ADMIN_ID
 
@@ -72,7 +75,7 @@ class OnlineMiddleware(Middleware):
 
         Configuration file is in YAML format.
         """
-        global echo_mp, ping_text, pong_text, dalay_heart_beat, DALAY_HEART_BEAT
+        global echo_mp, ping_text, pong_text, dalay_heart_beat, DALAY_HEART_BEAT, EAT_ECHO_MSG
 
         config_path = utils.get_config_path(self.middleware_id)
         if not config_path.exists():
@@ -87,6 +90,7 @@ class OnlineMiddleware(Middleware):
                 raise ValueError("echo mp is needed.")
 
             DALAY_HEART_BEAT = int(data.get("interval", DALAY_HEART_BEAT))
+            EAT_ECHO_MSG = int(data.get("eat_echo_msg", EAT_ECHO_MSG))
             ping_text = data.get("ping", ping_text)
             pong_text = data.get("pong", pong_text)
 
@@ -112,31 +116,31 @@ class OnlineMiddleware(Middleware):
         author = message.author
         if author:
             # self.logger.log( 99, "message.author: %s", message.author.__dict__)
-            if author.name == echo_mp and message.text == pong_text and ping_status == PING_STATUS:
-                ping_status = PONG_STATUS
+            if author.name == echo_mp and message.text == pong_text and (EAT_ECHO_MSG or ping_status == STATUS_PING):
+                # self.logger.log(99, "receive ping msg, ping_status: %s", ping_status)
+                ping_status = STATUS_PONG
                 failure_time = 0
                 dalay_heart_beat = DALAY_HEART_BEAT
                 warn_status = False
                 find_mp_fail_tip = False
                 return None
             if message.text == pong_text:
-                self.logger.log( 99, "Echo msg: %s, ping_status: %s", message.__dict__, ping_status)
+                self.logger.log(99, "Echo msg duplicate, ping_status: %s", ping_status)
 
         return message
 
 
 def schedule_heart_beat():
 
-    schedule = sched.scheduler(time.time, time.sleep)
     schedule.enter(dalay_heart_beat, 0, heart_beat, ())
 
     threading.Thread(target=schedule.run).start()
 
 
 def heart_beat():
-    global ping_status, failure_time, dalay_heart_beat, warn_status
+    global ping_status, failure_time, dalay_heart_beat, warn_status, find_mp_fail_tip
 
-    if ping_status == PING_STATUS:
+    if ping_status == STATUS_PING:
         failure_time += 1
 
         if not warn_status:
@@ -151,15 +155,18 @@ def heart_beat():
 
     try:
         echo_chat = get_echo_chat()
-        ping_status = PING_STATUS
+        # logger.log( 99, "send ping msg, ping_status: %s", ping_status)
+        ping_status = STATUS_PING
         echo_chat.send(ping_text)
 
     except ValueError:
         if not find_mp_fail_tip:
+            find_mp_fail_tip = True
             CHANNEL_ETM_BOT.send_message(ADMIN_ID, '微信可能已掉线，请检查')
 
     except Exception:
-        logger.exception('echo failed.')
+        # logger.exception('echo failed.')
+        pass
 
 
 def get_echo_chat():
