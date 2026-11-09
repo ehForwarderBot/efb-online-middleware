@@ -43,8 +43,12 @@ setup(
     install_requires=[
         "ehforwarderbot",
         "PyYaml",
+        "ruamel.yaml",
     ],
     entry_points={
-        "ehforwarderbot.middleware": "online.OnlineMiddleware = efb_online_middleware:OnlineMiddleware"
+        "ehforwarderbot.middleware": [
+            "online.OnlineMiddleware = efb_online_middleware:OnlineMiddleware",
+            "online.GuardedMiddleware = efb_online_middleware.guard:GuardedMiddleware",
+        ]
     }
 )
