@@ -30,6 +30,7 @@ class GuardTests(unittest.TestCase):
         g.ping, g.pong = "PING", "PONG"
         g.interval, g.reply_timeout, g.threshold = 1800, 8, 3
         g.notify_efb = False
+        g.eat_pong = True
         g.lock = threading.RLock()
         g.stop, g.reply = threading.Event(), threading.Event()
         g.pending, g.failures = False, 0
