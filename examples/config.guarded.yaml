@@ -1,0 +1,15 @@
+# Example for ~/.ehforwarderbot/profiles/sssuck/online.GuardedMiddleware/config.yaml
+# Set echo_mp to a WeChat Official Account with PING -> PONG auto-reply.
+# Keep disabled until this has been tested. Do not use an ordinary private chat.
+enabled: false
+echo_mp: ""
+ping: "PING"
+pong: "PONG"
+interval: 1800
+reply_timeout: 45
+failure_threshold: 3
+eat_echo_msg: true
+notify_via_efb: false
+# Optional: place where independent systemd monitor reads status.
+# File is atomically written and chmod 0600; parent directory chmod 0700.
+# status_file: /run/efb-online-guard/sssuck.json
